@@ -13,14 +13,6 @@ typealias FullPair = (x: Int, y: Int, color: CGColor)
 typealias FullPairs = [(x: Int, y: Int, color: CGColor)]
 typealias ColoredPairs = [(color: CGColor, number: Int)]
 
-infix operator ** : BitwiseShiftPrecedence
-func ** (num: Double, power: Double) -> Double {
-  return pow(num, power)
-}
-func ** (num: Int, power: Int) -> Double {
-  return Double(num) ** Double(power)
-}
-
 fileprivate extension UIView {
   func drawDot(x: Int, y: Int, radius: Int, color: CGColor) {
     let dotPath = UIBezierPath(ovalIn: CGRect(x: x, y: y, width: radius, height: radius))
@@ -29,9 +21,11 @@ fileprivate extension UIView {
     layer.strokeColor = color
     self.layer.addSublayer(layer)
   }
-  func drawDots(coords: FullPairs, radius: Int) {
+  func drawDots(coords: FullPairs, radius: Int, bounds: CoordPair) {
+    let DELTA_X = (Int(self.bounds.size.width) - bounds.x) / 2,
+        DELTA_Y = (Int(self.bounds.size.height) - bounds.y) / 2
     for pair in coords {
-      drawDot(x: pair.x, y: pair.y, radius: radius, color: pair.color)
+      drawDot(x: pair.x + DELTA_X, y: pair.y + DELTA_Y, radius: radius, color: pair.color)
     }
   }
 }
@@ -40,28 +34,48 @@ enum ColorMethod: Int {
   case random = 0
   case outward
   case rings
+  case angles
+  case weightedRings
 }
 
-class DrawficationsViewController: UIViewController {
+class DFVC: UIViewController {
   
-  static let COLOR_METHOD: ColorMethod = .rings
+  static let COLOR_METHOD: ColorMethod = .weightedRings
+  static let RADIUS: Int = 8
   static var WIDTH: Int = 1
   static var HEIGHT: Int = 1
   
   private static func distance(coord c: CoordPair) -> Int {
-    func dist(coord c: CoordPair) -> Double {
+    let X = c.x,
+        Y = c.y,
+        X_CENT = c.x - WIDTH / 2,
+        Y_CENT = c.y - WIDTH / 2,
+        X_DIV = X_CENT == 0 ? pow(10, -10) : Double(X_CENT)
+    var CENTRAL_ANGLE = Int(atan(Double(Y_CENT)/X_DIV) * 180 / Double.pi) + (X_CENT < 0 ? 180 : 0)
+    if (CENTRAL_ANGLE < 0) { CENTRAL_ANGLE += 360; }
+    func dist(coord c: CoordPair) -> Int {
       switch (COLOR_METHOD) {
       case .random:
         return -1
       case .outward:
-        return c.x ** 2 + c.y ** 2
+        return X * X + Y * Y
       case .rings:
-        return (c.x - WIDTH / 2) ** 2 + (c.y - WIDTH / 2) ** 2
+        return Int(X_CENT * X_CENT + Y_CENT * Y_CENT)
+      case .angles:
+        return CENTRAL_ANGLE
+      case .weightedRings:
+        let centralConstant = Int(0.25 * sqrt(Double(WIDTH / 2 * WIDTH / 2 + HEIGHT / 2 * HEIGHT / 2)))
+        let distance = Int(sqrt(Double(X_CENT * X_CENT + Y_CENT * Y_CENT)))
+        if (centralConstant < distance) {
+          return centralConstant + 1 + CENTRAL_ANGLE
+        } else {
+          return distance
+        }
       }
     }
-    let d = Int(dist(coord: c))
-    print("\(d) \(c.x) \(c.y)")
-    return abs(d)
+    let d = dist(coord: c)
+    //print(d, X_CENT, Y_CENT)
+    return d
   }
   
   private static func getCoords(numCoords: Int) -> CoordPairs {
@@ -91,22 +105,23 @@ class DrawficationsViewController: UIViewController {
   }
   
   func getColoredCoords(numCoords: Int, colors: ColoredPairs) -> FullPairs {
-    DrawficationsViewController.WIDTH = Int(view.bounds.size.width)
-    DrawficationsViewController.HEIGHT = Int(view.bounds.size.height)
-    return DrawficationsViewController.colorCoords(
-      coords: DrawficationsViewController.getCoords(numCoords: numCoords),
+    DFVC.WIDTH = min(Int(view.bounds.size.width) - 100, DFVC.RADIUS * numCoords * 3)
+    DFVC.HEIGHT = min(Int(view.bounds.size.height) - 100, DFVC.RADIUS * numCoords * 3)
+    return DFVC.colorCoords(
+      coords: DFVC.getCoords(numCoords: numCoords),
       colors: colors)
   }
   
   override func viewDidLoad() {
     super.viewDidLoad()
     // Do any additional setup after loading the view.
-    let RADIUS = 8,
-        RED = CGColor.init(red: 255, green: 0, blue: 0, alpha: 1),
-        GREEN = CGColor.init(red: 0, green: 0, blue: 0, alpha: 1),
+    let RED = CGColor.init(red: 255, green: 0, blue: 0, alpha: 1),
+        GREEN = CGColor.init(red: 0, green: 255, blue: 0, alpha: 1),
         BLUE = CGColor.init(red: 0, green: 0, blue: 255, alpha: 1),
-        coords = getColoredCoords(numCoords: 12, colors: [(BLUE, 8), (RED, 4), (GREEN, 2)])
-    view.drawDots(coords: coords, radius: RADIUS)
+        WHITE = CGColor.init(red: 255, green: 255, blue: 255, alpha: 1),
+        YELLOW = CGColor.init(red: 255, green: 255, blue: 0, alpha: 1),
+        coords = getColoredCoords(numCoords: 140, colors: [(WHITE, 10), (BLUE, 50), (YELLOW, 20), (RED, 50), (GREEN, 10)])
+    view.drawDots(coords: coords, radius: DFVC.RADIUS, bounds: (DFVC.WIDTH, DFVC.HEIGHT))
   }
 }
 
