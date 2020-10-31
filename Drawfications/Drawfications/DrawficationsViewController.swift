@@ -7,10 +7,19 @@
 
 import UIKit
 
-typealias CoordPair = (x: CGFloat, y: CGFloat)
+typealias CoordPair = (x: Int, y: Int)
 typealias CoordPairs = [CoordPair]
-typealias FullPair = (x: CGFloat, y: CGFloat, color: CGColor)
-typealias FullPairs = [(x: CGFloat, y: CGFloat, color: CGColor)]
+typealias FullPair = (x: Int, y: Int, color: CGColor)
+typealias FullPairs = [(x: Int, y: Int, color: CGColor)]
+typealias ColoredPairs = [(color: CGColor, number: Int)]
+
+infix operator ** : BitwiseShiftPrecedence
+func ** (num: Double, power: Double) -> Double {
+  return pow(num, power)
+}
+func ** (num: Int, power: Int) -> Double {
+  return Double(num) ** Double(power)
+}
 
 fileprivate extension UIView {
   func drawDot(x: Int, y: Int, radius: Int, color: CGColor) {
@@ -22,29 +31,50 @@ fileprivate extension UIView {
   }
   func drawDots(coords: FullPairs, radius: Int) {
     for pair in coords {
-      drawDot(x: Int(pair.x), y: Int(pair.y), radius: radius, color: pair.color)
+      drawDot(x: pair.x, y: pair.y, radius: radius, color: pair.color)
     }
   }
 }
 
+enum ColorMethod: Int {
+  case random = 0
+  case outward
+  case rings
+}
+
 class DrawficationsViewController: UIViewController {
   
-  private func distance(coord c: CoordPair) -> CGFloat {
-    sqrt(c.x * c.x + c.y * c.y)
+  static let COLOR_METHOD: ColorMethod = .rings
+  static var WIDTH: Int = 1
+  static var HEIGHT: Int = 1
+  
+  private static func distance(coord c: CoordPair) -> Int {
+    func dist(coord c: CoordPair) -> Double {
+      switch (COLOR_METHOD) {
+      case .random:
+        return -1
+      case .outward:
+        return c.x ** 2 + c.y ** 2
+      case .rings:
+        return (c.x - WIDTH / 2) ** 2 + (c.y - WIDTH / 2) ** 2
+      }
+    }
+    let d = Int(dist(coord: c))
+    print("\(d) \(c.x) \(c.y)")
+    return abs(d)
   }
   
-  private func getCoords(numCoords: Int) -> CoordPairs {
-    var coords: CoordPairs = [],
-        size = view.bounds.size
+  private static func getCoords(numCoords: Int) -> CoordPairs {
+    var coords: CoordPairs = []
     for _ in 0..<numCoords {
-      coords.append((CGFloat.random(in: 0..<size.width), CGFloat.random(in: 0..<size.height)))
+      coords.append((Int.random(in: 0..<WIDTH), Int.random(in: 0..<HEIGHT)))
     }
     return coords
   }
   
-  private func colorCoords(coords: CoordPairs, colors: [(color: CGColor, number: Int)], random: Bool) -> FullPairs {
+  private static func colorCoords(coords: CoordPairs, colors: ColoredPairs) -> FullPairs {
     var pairs: CoordPairs
-    if (random) { pairs = coords }
+    if (COLOR_METHOD == .random) { pairs = coords }
     else { pairs = coords.sorted { (a, b) in distance(coord: a) < distance(coord: b) } }
     var coloredCoords: FullPairs = [],
         colorPosition = 0,
@@ -60,6 +90,14 @@ class DrawficationsViewController: UIViewController {
     return coloredCoords
   }
   
+  func getColoredCoords(numCoords: Int, colors: ColoredPairs) -> FullPairs {
+    DrawficationsViewController.WIDTH = Int(view.bounds.size.width)
+    DrawficationsViewController.HEIGHT = Int(view.bounds.size.height)
+    return DrawficationsViewController.colorCoords(
+      coords: DrawficationsViewController.getCoords(numCoords: numCoords),
+      colors: colors)
+  }
+  
   override func viewDidLoad() {
     super.viewDidLoad()
     // Do any additional setup after loading the view.
@@ -67,9 +105,8 @@ class DrawficationsViewController: UIViewController {
         RED = CGColor.init(red: 255, green: 0, blue: 0, alpha: 1),
         GREEN = CGColor.init(red: 0, green: 0, blue: 0, alpha: 1),
         BLUE = CGColor.init(red: 0, green: 0, blue: 255, alpha: 1),
-        coords = getCoords(numCoords: 12),
-        coloredCoords = colorCoords(coords: coords, colors: [(BLUE, 8), (RED, 4)], random: false)
-    view.drawDots(coords: coloredCoords, radius: RADIUS)
+        coords = getColoredCoords(numCoords: 12, colors: [(BLUE, 8), (RED, 4), (GREEN, 2)])
+    view.drawDots(coords: coords, radius: RADIUS)
   }
 }
 
