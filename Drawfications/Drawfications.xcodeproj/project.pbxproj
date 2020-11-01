@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4829B8B5254E37FC00C7160F /* SettingsVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4829B8B4254E37FC00C7160F /* SettingsVC.swift */; };
 		48D67A99254CCB0600872C18 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48D67A98254CCB0600872C18 /* AppDelegate.swift */; };
 		48D67A9D254CCB0600872C18 /* DFVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48D67A9C254CCB0600872C18 /* DFVC.swift */; };
 		48D67AA0254CCB0600872C18 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 48D67A9E254CCB0600872C18 /* Main.storyboard */; };
@@ -34,6 +35,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		4829B8B4254E37FC00C7160F /* SettingsVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsVC.swift; sourceTree = "<group>"; };
 		487DD950254CCCAE004806C5 /* Drawfications.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Drawfications.entitlements; sourceTree = "<group>"; };
 		48D67A95254CCB0600872C18 /* Drawfications.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Drawfications.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		48D67A98254CCB0600872C18 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -101,6 +103,7 @@
 				487DD950254CCCAE004806C5 /* Drawfications.entitlements */,
 				48D67A98254CCB0600872C18 /* AppDelegate.swift */,
 				48D67A9C254CCB0600872C18 /* DFVC.swift */,
+				4829B8B4254E37FC00C7160F /* SettingsVC.swift */,
 				48D67A9E254CCB0600872C18 /* Main.storyboard */,
 				48D67AA4254CCB0600872C18 /* Assets.xcassets */,
 				48D67AA9254CCB0600872C18 /* Info.plist */,
@@ -260,6 +263,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				48D67AA3254CCB0600872C18 /* Drawfications.xcdatamodeld in Sources */,
+				4829B8B5254E37FC00C7160F /* SettingsVC.swift in Sources */,
 				48D67A9D254CCB0600872C18 /* DFVC.swift in Sources */,
 				48D67A99254CCB0600872C18 /* AppDelegate.swift in Sources */,
 			);

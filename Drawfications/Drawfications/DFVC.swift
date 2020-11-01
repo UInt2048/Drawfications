@@ -21,13 +21,15 @@ fileprivate extension UIView {
     layer.strokeColor = color
     self.layer.addSublayer(layer)
   }
-  func drawDots(coords: FullPairs, radius: Int, bounds: CoordPair) {
-    let DELTA_X = (Int(self.bounds.size.width) - bounds.x) / 2,
-        DELTA_Y = (Int(self.bounds.size.height) - bounds.y) / 2
+  func drawDots(coords: FullPairs, radius: Int) {
     for pair in coords {
-      drawDot(x: pair.x + DELTA_X, y: pair.y + DELTA_Y, radius: radius, color: pair.color)
+      drawDot(x: pair.x, y: pair.y, radius: radius, color: pair.color)
     }
   }
+}
+
+func Color(_ red: Int, _ green: Int, _ blue: Int, _ alpha: Double) -> CGColor {
+  CGColor(red: CGFloat(red) / 255, green: CGFloat(green) / 255, blue: CGFloat(blue) / 255, alpha: CGFloat(alpha))
 }
 
 enum ColorMethod: Int {
@@ -39,11 +41,12 @@ enum ColorMethod: Int {
 }
 
 class DFVC: UIViewController {
-  
   static let COLOR_METHOD: ColorMethod = .weightedRings
   static let RADIUS: Int = 8
   static var WIDTH: Int = 1
   static var HEIGHT: Int = 1
+  static var DELTA_X: Int = 0
+  static var DELTA_Y: Int = 0
   
   private static func distance(coord c: CoordPair) -> Int {
     let X = c.x,
@@ -81,7 +84,7 @@ class DFVC: UIViewController {
   private static func getCoords(numCoords: Int) -> CoordPairs {
     var coords: CoordPairs = []
     for _ in 0..<numCoords {
-      coords.append((Int.random(in: 0..<WIDTH), Int.random(in: 0..<HEIGHT)))
+      coords.append((Int.random(in: 0..<WIDTH) + DELTA_X, Int.random(in: 0..<HEIGHT) + DELTA_Y))
     }
     return coords
   }
@@ -104,24 +107,69 @@ class DFVC: UIViewController {
     return coloredCoords
   }
   
-  func getColoredCoords(numCoords: Int, colors: ColoredPairs) -> FullPairs {
+  func getColoredCoords(colors: ColoredPairs) -> FullPairs {
+    var numCoords = 0
+    for pair in colors {
+      numCoords += pair.number
+    }
     DFVC.WIDTH = min(Int(view.bounds.size.width) - 100, DFVC.RADIUS * numCoords * 3)
     DFVC.HEIGHT = min(Int(view.bounds.size.height) - 100, DFVC.RADIUS * numCoords * 3)
+    DFVC.DELTA_X = (Int(view.bounds.size.width) - DFVC.WIDTH) / 2
+    DFVC.DELTA_Y = (Int(view.bounds.size.height) - DFVC.HEIGHT) / 2
     return DFVC.colorCoords(
       coords: DFVC.getCoords(numCoords: numCoords),
       colors: colors)
   }
   
+  func addReloadButton() {
+    let button = UIButton()
+    button.addTarget(self, action: #selector(refresh), for: .touchUpInside)
+    button.setTitle("\u{27F3}", for: .normal)
+    button.frame = CGRect(x: 0, y: 50, width: 50, height: 50)
+    button.titleLabel!.font = UIFont.systemFont(ofSize: 50)
+    view.addSubview(button)
+  }
+  
+  func addSettingsButton() {
+    let button = UIButton()
+    button.addTarget(self, action: #selector(settingsPushed), for: .touchUpInside)
+    button.setTitle("\u{2699}\u{FE0E}", for: .normal)
+    button.frame = CGRect(x: view.bounds.size.width - 50, y: 50, width: 50, height: 50)
+    button.titleLabel!.font = UIFont.systemFont(ofSize: 50)
+    view.addSubview(button)
+  }
+  
+  @objc func loadDots() {
+    let RED = Color(255, 0, 0, 1.0),
+        GREEN = Color(0, 255, 0, 1.0),
+        BLUE = Color(0, 0, 255, 1.0),
+        GRAY = Color(128, 128, 128, 1.0),
+        YELLOW = Color(255, 255, 0, 1.0),
+        BROWN = Color(158, 100, 58, 1.0),
+        coords = getColoredCoords(colors: [(YELLOW, 9), (GREEN, 31), (GRAY, 5), (BLUE, 9), (RED, 10), (BROWN, 10)])
+    view.drawDots(coords: coords, radius: DFVC.RADIUS)
+  }
+  
+  @objc func addItems() {
+    loadDots()
+    addReloadButton()
+    addSettingsButton()
+  }
+  
+  @objc func refresh() {
+    view.layer.sublayers?.forEach { $0.removeFromSuperlayer() }
+    addItems()
+  }
+  
+  @objc func settingsPushed() {
+    let settingsView = storyboard?.instantiateViewController(identifier: "SettingsVC") as! SettingsVC
+    present(settingsView, animated: true, completion: nil)
+  }
+  
   override func viewDidLoad() {
     super.viewDidLoad()
     // Do any additional setup after loading the view.
-    let RED = CGColor.init(red: 255, green: 0, blue: 0, alpha: 1),
-        GREEN = CGColor.init(red: 0, green: 255, blue: 0, alpha: 1),
-        BLUE = CGColor.init(red: 0, green: 0, blue: 255, alpha: 1),
-        WHITE = CGColor.init(red: 255, green: 255, blue: 255, alpha: 1),
-        YELLOW = CGColor.init(red: 255, green: 255, blue: 0, alpha: 1),
-        coords = getColoredCoords(numCoords: 140, colors: [(WHITE, 10), (BLUE, 50), (YELLOW, 20), (RED, 50), (GREEN, 10)])
-    view.drawDots(coords: coords, radius: DFVC.RADIUS, bounds: (DFVC.WIDTH, DFVC.HEIGHT))
+    addItems()
   }
 }
 
