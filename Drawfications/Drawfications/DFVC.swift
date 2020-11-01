@@ -32,12 +32,12 @@ func Color(_ red: Int, _ green: Int, _ blue: Int, _ alpha: Double) -> CGColor {
   CGColor(red: CGFloat(red) / 255, green: CGFloat(green) / 255, blue: CGFloat(blue) / 255, alpha: CGFloat(alpha))
 }
 
-enum ColorMethod: Int {
-  case random = 0
-  case outward
-  case rings
-  case angles
-  case weightedRings
+enum ColorMethod: String, Codable, CaseIterable {
+  case random = "Random"
+  case outward = "Outward (from top-left)"
+  case rings = "Rings"
+  case angles = "Pie chart"
+  case weightedRings = "Pie chart with a ring in it"
 }
 
 class DFVC: UIViewController {

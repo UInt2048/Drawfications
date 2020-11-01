@@ -25,8 +25,25 @@ class SettingsVC: UITableViewController {
     return cell
   }
   
+  private func settingRowTapped(_ tableView: UITableView, rowAt indexPath: IndexPath) {
+    guard let setting = Settings.grab(setting: Settings.settingArray[indexPath.row]) else {
+      return
+    }
+    if setting is Bool {
+      
+    } else if setting is String {
+      let settingsView = storyboard?.instantiateViewController(identifier: "SettingDetailVC") as! SettingDetailVC
+      settingsView.setting = indexPath.row
+      present(settingsView, animated: true, completion: nil)
+    }
+  }
+  
   override func tableView(_ tableView: UITableView, accessoryButtonTappedForRowWith indexPath: IndexPath) {
-    // Do something here!
+    settingRowTapped(tableView, rowAt: indexPath)
+  }
+  
+  override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+    settingRowTapped(tableView, rowAt: indexPath)
   }
   
   override func viewDidLoad() {
