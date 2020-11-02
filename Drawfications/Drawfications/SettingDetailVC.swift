@@ -36,14 +36,6 @@ class SettingDetailVC: UITableViewController {
     }
   }
   
-  private func getSelectedIndexPath(_ tableView: UITableView) -> IndexPath {
-    for i in 0 ..< self.tableView(tableView, numberOfRowsInSection: 0) {
-      let path = IndexPath(row: i, section: 0)
-      if getAccessory(tableView, rowAt: path) == .checkmark { return path }
-    }
-    fatalError("All possible paths have been used.")
-  }
-  
   override func numberOfSections(in tableView: UITableView) -> Int { 1 }
   override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
     guard setting >= 0 && setting < Settings.settingArray.count else { fatalError("Is there a new setting?") }
@@ -54,6 +46,7 @@ class SettingDetailVC: UITableViewController {
   }
   
   override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+    print("Method call!")
     guard setting >= 0 && setting < Settings.settingArray.count else { fatalError("Is there a new setting?") }
     let name = Settings.settingArray[setting]
     switch setting {
@@ -64,11 +57,16 @@ class SettingDetailVC: UITableViewController {
         if (i == indexPath.row) { valueSelected = cases[i] }
       }
       Settings.grab(setting: name, newValue: valueSelected)
-      let oldCell = tableView.dequeueReusableCell(withIdentifier: "basicStyleCell", for: getSelectedIndexPath(tableView))
-      oldCell.accessoryType = .none
-      let newCell = tableView.dequeueReusableCell(withIdentifier: "basicStyleCell", for: indexPath)
-      newCell.accessoryType = .checkmark
+      if let cell = tableView.cellForRow(at: indexPath) {
+        cell.accessoryType = .checkmark
+      }
     default: fatalError("New setting not implemented in SettingDetailVC")
+    }
+  }
+  
+  override func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
+    if let cell = tableView.cellForRow(at: indexPath) {
+      cell.accessoryType = .none
     }
   }
   
